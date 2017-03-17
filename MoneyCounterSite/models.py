@@ -1,13 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 
 
 class Profile(models.Model):
     user = models.OneToOneField(User)
-    friends = models.ManyToManyField("self", verbose_name = 'Друзья', blank = True)
+    friends = models.ManyToManyField("self", verbose_name = 'Друзья', db_index = True, blank = True)
     telephone_number = models.CharField(max_length = 12, verbose_name = 'Номер телефона', blank=True)
     favourite_food = models.CharField(max_length = 200, verbose_name = 'Предпочтения в еде', blank=True)
     favourite_drinkables = models.CharField(max_length = 200, verbose_name = 'Предпочтения в напитках', blank=True)
+    likes = GenericRelation('MoneyCounterSite.Like', related_query_name='profiles', blank=True, null=True)
+    dislikes = GenericRelation('MoneyCounterSite.Like', related_query_name='profiles', blank=True, null=True)
 
     def __str__(self):
         return self.user.username
@@ -22,6 +26,9 @@ class Party(models.Model):
     datetime = models.DateTimeField(verbose_name = 'Дата проведения', blank = True, null = True)
     place = models.CharField(max_length=200, verbose_name = 'Место проведения')
     persons = models.ManyToManyField(to=Profile, verbose_name = 'Участники')
+    total_cost = models.FloatField(verbose_name = 'Общая стоимость тусы', blank = True, null = True)
+    likes = GenericRelation('MoneyCounterSite.Like', related_query_name='parties',  blank=True, null=True)
+    dislikes = GenericRelation('MoneyCounterSite.Like', related_query_name='parties',  blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -45,8 +52,10 @@ class Payment(models.Model):
 
 
 class Like(models.Model):
-    party = models.ForeignKey(to=Profile, on_delete=models.CASCADE, verbose_name = 'Какой тусе')
-    person = models.ForeignKey(to=Party, on_delete=models.CASCADE, verbose_name  = 'Кто поставил')
+    person = models.ForeignKey(to=Profile, on_delete=models.CASCADE, verbose_name  = 'Кто поставил')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     class Meta:
         verbose_name = 'Лайк'
@@ -54,8 +63,10 @@ class Like(models.Model):
 
 
 class Dislike(models.Model):
-    party = models.ForeignKey(to=Profile, on_delete=models.CASCADE, verbose_name = 'Какой тусе')
-    person = models.ForeignKey(to=Party, on_delete=models.CASCADE, verbose_name  = 'Кто поставил')
+    person = models.ForeignKey(to=Profile, on_delete=models.CASCADE, verbose_name  = 'Кто поставил')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     class Meta:
         verbose_name = 'Дизлайк'
