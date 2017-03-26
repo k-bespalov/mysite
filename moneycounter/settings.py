@@ -78,8 +78,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'money_counter1',
-		'USER': 'konstantin',
-        'PASSWORD': 'Act_fin13$19',
+		'USER': 'root',
+        'PASSWORD': '112358',
 		'OPTIONS': {'charset': 'utf8mb4'}
         #'HOST': '127.0.0.1',
         #'PORT': '5432',

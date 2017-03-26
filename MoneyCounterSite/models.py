@@ -49,7 +49,7 @@ class Party(models.Model):
     datetime = models.DateTimeField(verbose_name = 'Дата проведения', db_index = True, blank = True, null = True)
     place = models.CharField(max_length=200, verbose_name = 'Место проведения')
     persons = models.ManyToManyField(to=Profile, verbose_name = 'Участники')
-    total_cost = models.DecimalField(max_digits=5, decimal_places=2, verbose_name = 'Общая стоимость тусы', db_index = True, blank = True, null = True)
+    total_cost = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Общая стоимость тусы', db_index = True, blank = True, null = True)
     #likes = GenericRelation('MoneyCounterSite.Like', related_query_name='parties',  blank=True, null=True)
 
     def __str__(self):
@@ -68,7 +68,7 @@ class Payment(models.Model):
     user = models.ForeignKey(to=Profile, verbose_name = 'Чей платеж')
     party = models.ForeignKey(to=Party, verbose_name = 'Для какой тусовки')
     description = models.CharField(max_length=200, verbose_name = 'Описание платежа')
-    cost = models.DecimalField(max_digits=5, decimal_places=2, verbose_name = 'Сколько заплатил')
+    cost = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Сколько заплатил')
 
 
     class Meta:
@@ -83,7 +83,7 @@ class Repayment(models.Model):
     who_pays = models.ForeignKey(to=Profile, related_name = 'who', verbose_name = 'Кого должен отдать денег')
     who_receives = models.ForeignKey(to=Profile, related_name = 'to_whom', verbose_name = 'Кому должен отдать денег')
     which_party = models.ForeignKey(to=Party, verbose_name = 'За какую тусовку')
-    price = models.DecimalField(max_digits=5, decimal_places=2, verbose_name = 'Сколько должен отдать денег')
+    price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Сколько должен отдать денег')
 
     class Meta:
         verbose_name = 'Оплата'
@@ -104,6 +104,6 @@ class Like(models.Model):
     class Meta:
         verbose_name = 'Лайк/Дизлайк'
         verbose_name_plural = 'Лайки/Дизлайки'
-
-    def __str__(self):
-        return self.flag
+    #
+    # def __str__(self):
+    #     return self.flag
