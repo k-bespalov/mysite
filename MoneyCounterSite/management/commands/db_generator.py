@@ -36,7 +36,7 @@ with open('last_names.txt', 'r') as file:
 
 favouritegoods  = ["чипсы", "пицца", "сухарики", "салат цезарь", "шаурма",
  "суши", "роллы", "бургеры", "сухарики", "конфеты", "мармелад", "кортошка фри",
-  "крылья", "пиво", "шаипанское", "вино", "виски", "ликер", "водка"]
+  "крылья", "пиво", "шампанское", "вино", "виски", "ликер", "водка"]
 
 
 def password_gen():
@@ -88,7 +88,7 @@ def place_name_gen():
     return name
 
 def description_gen(arr):
-    return ''.join(random.sample(arr, random.randint(1, len(arr))))[:-1]
+    return ' '.join(random.sample(arr, random.randint(1, len(arr))))
 
 
 
@@ -155,6 +155,8 @@ for _ in range(BULK_NUM):
 #
 # print('er3rhio')
 
+all_users = list(Profile.objects.all().values_list('id', flat=True))
+all_parties = list(Party.objects.all().values_list('id', flat=True))
 
 
 for _ in range(BULK_NUM):
@@ -166,10 +168,10 @@ for _ in range(BULK_NUM):
         hour = random.choice(range(0, 24))
         minute = random.choice(range(0, 60))
         second = random.choice(range(0, 60))
-        payment_tmp = Party(
+        payment_tmp = Payment(
             datetime=timezone.datetime(year, month, day, hour, minute, second),
-            p_user = Profile.objects.get(id=(random.randint(0, USERS_NUM))),
-            p_party = Party.objects.get(id=(random.randint(0, PARTIES_NUM))),
+            p_user_id = random.choice(all_users),
+            p_party_id = random.choice(all_parties),
             description = description_gen(favouritegoods),
             cost = random.randint(100, 600)
         )
@@ -180,13 +182,13 @@ for _ in range(BULK_NUM):
 for _ in range(BULK_NUM):
     repayment_list = []
     for _ in range(int(PAYMENT_NUM / BULK_NUM)):
-        repayment_tmp = Party(
-            who_pays_id = Profle.objects.get(id=(random.randint(0, USERS_NUM))),
-            which_party_id = Party.objects.get(id=(random.randint(0, PARTIES_NUM))),
-            who_receives_id = Profle.objects.get(id=(random.randint(0, USERS_NUM))),
+        repayment_tmp = Repayment(
+            who_pays_id = random.choice(all_users),
+            which_party_id = random.choice(all_parties),
+            who_receives_id = random.choice(all_users),
             price = random.randint(100, 600)
         )
-        repayment_list.append(payment_tmp)
+        repayment_list.append(repayment_tmp)
     Repayment.objects.bulk_create(repayment_list)
 
 

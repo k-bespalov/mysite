@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'moneycounter.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'money_counter',
+        'NAME': 'money_counter1',
 		'USER': 'root',
         'PASSWORD': '112358',
 		'OPTIONS': {'charset': 'utf8mb4'}
