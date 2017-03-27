@@ -12,12 +12,16 @@ import random
 import datetime
 import string
 from django.utils import timezone
+from django.db import connection
 
-USERS_NUM = 100
+connection.close()
+
+USERS_NUM = 100000
 NAMES_NUM = 60
 SURNAMES_NUM = 251
-PARTIES_NUM = 50
-PAYMENT_NUM = 10
+PARTIES_NUM = 50000
+PAYMENT_NUM = 100000
+LIKE_NUM = 50000
 
 
 
@@ -126,7 +130,7 @@ for _ in range(BULK_NUM):
 profiles = list(Profile.objects.all().values_list('id', flat=True))
 lst = []
 dic = {}
-for _ in range(random.randint((USERS_NUM/2), (USERS_NUM))):
+for _ in range(5000):
     num1 = random.choice(profiles)
     num2 = random.choice(profiles)
     if ((num1 != num2) and (dic.get(str(num1)) != num2) and (dic.get(str(num2)) != num1)):
@@ -137,6 +141,7 @@ for _ in range(random.randint((USERS_NUM/2), (USERS_NUM))):
             )
         )
         dic[num1] = num2
+        dic[num2] = num1
 dic.clear()
 Profile.friends.through.objects.bulk_create(lst)
 
@@ -146,8 +151,6 @@ Profile.friends.through.objects.bulk_create(lst)
 for _ in range(BULK_NUM):
     party_list = []
     for _ in range(int(PARTIES_NUM / BULK_NUM)):
-        # personss = list(User.objects.all().values_list('id', flat=True))
-        # person_list = [].extend(random.sample(personss, random.randint(1, USERS_NUM)))
         year = random.choice(range(2015, 2017))
         month = random.choice(range(1, 13))
         day = random.choice(range(1, 29))
@@ -240,10 +243,18 @@ for item in goods:
         )
 FavouriteGoods.person.through.objects.bulk_create(lst)
 
-#
-# all_profiles = list(Profile.objects.all())
-# all_goods = list(FavouriteGoods.objects.all())
-# for item in all_goods:
-#     tmp_profiles_list = []
-#     tmp_profiles_list.extend(random.sample(all_profiles, random.randint(1, USERS_NUM)))
-#     item.persons.add(tmp_profiles_list)
+obj = [2, 6]
+for _ in range(BULK_NUM):
+    like_list = []
+    for _ in range(int(LIKE_NUM / BULK_NUM)):
+        type_id = random.choice(obj)
+        condition = (type_id == 2)
+        tmp_arr = list(Profile.objects.all().values_list('id', flat=True)) if condition else list(Party.objects.all().values_list('id', flat=True))
+        like_tmp = Like(
+            flag = random.randint(0, 1),
+            person_id = random.choice(profiles),
+            content_type_id = type_id,
+            object_id = random.choice(tmp_arr)
+        )
+        like_list.append(like_tmp)
+    Like.objects.bulk_create(like_list)
