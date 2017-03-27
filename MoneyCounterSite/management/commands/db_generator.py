@@ -123,6 +123,26 @@ for _ in range(BULK_NUM):
     Profile.objects.bulk_create(profile_list)
 
 
+profiles = list(Profile.objects.all().values_list('id', flat=True))
+lst = []
+dic = {}
+for _ in range(random.randint((USERS_NUM/2), (USERS_NUM))):
+    num1 = random.choice(profiles)
+    num2 = random.choice(profiles)
+    if ((num1 != num2) and (dic.get(str(num1)) != num2) and (dic.get(str(num2)) != num1)):
+        lst.append(
+            Profile.friends.through(
+                from_profile_id = num1,
+                to_profile_id = num2
+            )
+        )
+        dic[num1] = num2
+dic.clear()
+Profile.friends.through.objects.bulk_create(lst)
+
+
+
+
 for _ in range(BULK_NUM):
     party_list = []
     for _ in range(int(PARTIES_NUM / BULK_NUM)):
@@ -143,17 +163,21 @@ for _ in range(BULK_NUM):
         )
         party_list.append(party_tmp)
     Party.objects.bulk_create(party_list)
-#
-# print('13311441')
-#
-# all_profiles = list(Profile.objects.all())
-# all_parties = list(Party.objects.all())
-# for party in all_parties:
-#     tmp_profiles_list = []
-#     tmp_profiles_list.extend(random.sample(all_profiles, random.randint(1, 25)))
-#     party.persons.add(tmp_profiles_list)
-#
-# print('er3rhio')
+
+parties = list(Party.objects.all().values_list('id', flat=True))
+profiles = list(Profile.objects.all().values_list('id', flat=True))
+lst = []
+for party in parties:
+    tmp_profiles = random.sample(profiles, random.randint(1, 26))
+    for profile_id in tmp_profiles:
+        lst.append(
+            Party.persons.through(
+                profile_id = profile_id,
+                party_id = party
+            )
+        )
+Party.persons.through.objects.bulk_create(lst)
+
 
 all_users = list(Profile.objects.all().values_list('id', flat=True))
 all_parties = list(Party.objects.all().values_list('id', flat=True))
@@ -192,15 +216,30 @@ for _ in range(BULK_NUM):
     Repayment.objects.bulk_create(repayment_list)
 
 
-# for i in range(len(favouritegoods)):
-#     goods_list = []
-#     personss = list(User.objects.all().values_list('id', flat=True))
-#     goods_tmp = FavouriteGoods(
-#         name = favouritegoods[i]
-#     )
-#     goods_list.append(goods_tmp)
-# FavouriteGoods.objects.bulk_create(goods_list)
-#
+goods_list = []
+for i in range(len(favouritegoods)):
+    #personss = list(User.objects.all().values_list('id', flat=True))
+    goods_tmp = FavouriteGoods(
+        name = favouritegoods[i]
+    )
+    goods_list.append(goods_tmp)
+FavouriteGoods.objects.bulk_create(goods_list)
+
+
+goods = list(FavouriteGoods.objects.all().values_list('id', flat=True))
+profiles = list(Profile.objects.all().values_list('id', flat=True))
+lst = []
+for item in goods:
+    tmp_profiles = random.sample(profiles, random.randint(0, USERS_NUM))
+    for profile_id in tmp_profiles:
+        lst.append(
+            FavouriteGoods.person.through(
+                profile_id = profile_id,
+                favouritegoods_id = item
+            )
+        )
+FavouriteGoods.person.through.objects.bulk_create(lst)
+
 #
 # all_profiles = list(Profile.objects.all())
 # all_goods = list(FavouriteGoods.objects.all())
