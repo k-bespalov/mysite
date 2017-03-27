@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -48,7 +51,7 @@ class Party(models.Model):
     name = models.CharField(max_length = 200, verbose_name = 'Название тусовки')
     datetime = models.DateTimeField(verbose_name = 'Дата проведения', db_index = True, blank = True, null = True)
     place = models.CharField(max_length=200, verbose_name = 'Место проведения')
-    persons = models.ManyToManyField(to=Profile, verbose_name = 'Участники')
+    persons = models.ManyToManyField(to=Profile, verbose_name = 'Участники', blank = True, null = True)
     total_cost = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Общая стоимость тусы', db_index = True, blank = True, null = True)
     #likes = GenericRelation('MoneyCounterSite.Like', related_query_name='parties',  blank=True, null=True)
 
@@ -65,8 +68,8 @@ class Party(models.Model):
 
 class Payment(models.Model):
     datetime = models.DateTimeField(verbose_name = 'Дата платежа', blank = True, null = True, default=timezone.now)
-    user = models.ForeignKey(to=Profile, verbose_name = 'Чей платеж')
-    party = models.ForeignKey(to=Party, verbose_name = 'Для какой тусовки')
+    p_user = models.ForeignKey(to=Profile, verbose_name = 'Чей платеж')
+    p_party = models.ForeignKey(to=Party, verbose_name = 'Для какой тусовки')
     description = models.CharField(max_length=200, verbose_name = 'Описание платежа')
     cost = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Сколько заплатил')
 

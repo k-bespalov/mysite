@@ -1,0 +1,8 @@
+{% extends 'parties/party_base.html' %}
+{% block content %}
+    {% for party in parties %}
+      <div>
+      <a href="{% url 'party_detail' party.id %}">{{party.name}}</a>
+      </div>
+    {% endfor %}
+{% endblock %}

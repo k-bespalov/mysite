@@ -141,29 +141,25 @@ for _ in range(BULK_NUM):
             #persons = person_list,
             total_cost = random.randint(1000, 4000)
         )
-        party_list.append(user_tmp)
+        party_list.append(party_tmp)
     Party.objects.bulk_create(party_list)
-
-print('13311441')
-
-all_users = list(User.objects.all())
-all_parties = list(Party.objects.all())
-for party in all_parties:
-    tmp_users_list = []
-    tmp_users_list.extend(random.sample(all_users, random.randint(1, 25)))
-    #for i in range(random.randint(0, 3)):
-    #   tmp_sponsors_list.append(all_sponsors[random.randint(0, 11)])
-    party.user.add(*tmp_users_list)
-
-print('er3rhio')
+#
+# print('13311441')
+#
+# all_profiles = list(Profile.objects.all())
+# all_parties = list(Party.objects.all())
+# for party in all_parties:
+#     tmp_profiles_list = []
+#     tmp_profiles_list.extend(random.sample(all_profiles, random.randint(1, 25)))
+#     party.persons.add(tmp_profiles_list)
+#
+# print('er3rhio')
 
 
 
 for _ in range(BULK_NUM):
     payment_list = []
     for _ in range(int(PAYMENT_NUM / BULK_NUM)):
-        personss = list(User.objects.all().values_list('id', flat=True))
-        parties = list(Party.objects.all().values_list('id', flat=True))
         year = random.choice(range(2015, 2017))
         month = random.choice(range(1, 13))
         day = random.choice(range(1, 29))
@@ -172,8 +168,8 @@ for _ in range(BULK_NUM):
         second = random.choice(range(0, 60))
         payment_tmp = Party(
             datetime=timezone.datetime(year, month, day, hour, minute, second),
-            user_id = personss[random.randint(0, USERS_NUM)],
-            party_id = parties[random.randint(0, PARTIES_NUM)],
+            p_user = Profile.objects.get(id=(random.randint(0, USERS_NUM))),
+            p_party = Party.objects.get(id=(random.randint(0, PARTIES_NUM))),
             description = description_gen(favouritegoods),
             cost = random.randint(100, 600)
         )
@@ -184,24 +180,29 @@ for _ in range(BULK_NUM):
 for _ in range(BULK_NUM):
     repayment_list = []
     for _ in range(int(PAYMENT_NUM / BULK_NUM)):
-        personss = list(User.objects.all().values_list('id', flat=True))
-        parties = list(Party.objects.all().values_list('id', flat=True))
         repayment_tmp = Party(
-            who_pays_id = personss[random.randint(0, USERS_NUM)],
-            which_party_id = parties[random.randint(0, PARTIES_NUM)],
-            who_receives_id = personss[random.randint(0, USERS_NUM)],
+            who_pays_id = Profle.objects.get(id=(random.randint(0, USERS_NUM))),
+            which_party_id = Party.objects.get(id=(random.randint(0, PARTIES_NUM))),
+            who_receives_id = Profle.objects.get(id=(random.randint(0, USERS_NUM))),
             price = random.randint(100, 600)
         )
         repayment_list.append(payment_tmp)
     Repayment.objects.bulk_create(repayment_list)
 
 
-for i in range(len(favouritegoods)):
-    goods_list = []
-    personss = list(User.objects.all().values_list('id', flat=True))
-    goods_tmp = FavouriteGoods(
-        name = favouritegoods[i],
-        person = [].extend(random.sample(personss, random.randint(1, 5000)))
-    )
-    goods_list.append(goods_tmp)
-FavouriteGoods.objects.bulk_create(goods_list)
+# for i in range(len(favouritegoods)):
+#     goods_list = []
+#     personss = list(User.objects.all().values_list('id', flat=True))
+#     goods_tmp = FavouriteGoods(
+#         name = favouritegoods[i]
+#     )
+#     goods_list.append(goods_tmp)
+# FavouriteGoods.objects.bulk_create(goods_list)
+#
+#
+# all_profiles = list(Profile.objects.all())
+# all_goods = list(FavouriteGoods.objects.all())
+# for item in all_goods:
+#     tmp_profiles_list = []
+#     tmp_profiles_list.extend(random.sample(all_profiles, random.randint(1, USERS_NUM)))
+#     item.persons.add(tmp_profiles_list)
