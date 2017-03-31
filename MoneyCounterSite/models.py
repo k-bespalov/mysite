@@ -11,7 +11,7 @@ from django.utils import timezone
 class Profile(models.Model):
     user = models.OneToOneField(User)
     friends = models.ManyToManyField("self", verbose_name = 'Друзья', db_index = True, blank = True)
-    photo = models.ImageField(upload_to = '../media/', default = '../media/None/no-img.jpg')
+    photo = models.ImageField(upload_to = 'photos/', default = 'photos/None/no-img.jpg')
     telephone_number = models.CharField(max_length = 12, verbose_name = 'Номер телефона', blank=True)
     # favourite_food = models.CharField(max_length = 200, verbose_name = 'Предпочтения в еде', db_index = True, blank=True)
     # favourite_drinkables = models.CharField(max_length = 200, verbose_name = 'Предпочтения в напитках', db_index = True, blank=True)
@@ -52,7 +52,7 @@ class Party(models.Model):
     datetime = models.DateTimeField(verbose_name = 'Дата проведения', db_index = True, blank = True, null = True)
     place = models.CharField(max_length=200, verbose_name = 'Место проведения')
     persons = models.ManyToManyField(to=Profile, verbose_name = 'Участники')
-    total_cost = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Общая стоимость тусы', db_index = True, blank = True, null = True)
+    # total_cost = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Общая стоимость тусы', db_index = True, blank = True, null = True)
     #likes = GenericRelation('MoneyCounterSite.Like', related_query_name='parties',  blank=True, null=True)
 
     def __str__(self):
@@ -87,6 +87,7 @@ class Repayment(models.Model):
     who_receives = models.ForeignKey(to=Profile, related_name = 'to_whom', verbose_name = 'Кому должен отдать денег')
     which_party = models.ForeignKey(to=Party, verbose_name = 'За какую тусовку')
     price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Сколько должен отдать денег')
+    is_payed = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = 'Оплата'
@@ -98,7 +99,7 @@ class Repayment(models.Model):
 
 
 class Like(models.Model):
-    flag = models.NullBooleanField()
+    positive = models.BooleanField(default=True)
     person = models.ForeignKey(to=Profile, verbose_name  = 'Кто поставил')
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
