@@ -1,7 +1,7 @@
 {% extends 'parties/party_base.html' %}
 {% block content %}
     <h1>{{party.name}}</h1>
-    {% for person in party.persons_set.all %}
+    {% for person in party.persons.all %}
       <div>
       {{person.username}}
       </div>
