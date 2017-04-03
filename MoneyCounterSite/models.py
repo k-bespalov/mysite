@@ -42,7 +42,7 @@ class Party(models.Model):
     datetime = models.DateTimeField(verbose_name = 'Дата проведения', db_index = True, blank = True, null = True)
     place = models.CharField(max_length=200, verbose_name = 'Место проведения')
     persons = models.ManyToManyField(to=Profile, verbose_name = 'Участники')
-    # total_cost = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Общая стоимость тусы', db_index = True, blank = True, null = True)
+    #total_cost = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Общая стоимость тусы', db_index = True, blank = True, null = True)
     #likes = GenericRelation('MoneyCounterSite.Like', related_query_name='parties',  blank=True, null=True)
 
     def __str__(self):

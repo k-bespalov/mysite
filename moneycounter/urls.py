@@ -21,7 +21,8 @@ from MoneyCounterSite.views import *
 urlpatterns = [
     url(r'^parties$', party_list, name='party_list'),
     url(r'^id(?P<id>\d+)/$', show_profile, name='show_profile'),
-    url(r'^friends/$', friends_list, name='friends_list'),
+    url(r'^friends$', friends_list, name='friends_list'),
+    url(r'^payments$', my_payments_list, name='my_payments_list'),
     url(r'^participants(?P<party_id>\d+)/$', show_party_participants, name='show_party_participants'),
     url(r'^party(?P<party_id>\d+)/$', party_detail, name='party_detail'),
     url(r'^', include(MoneyCounterSite.urls, namespace='MoneyCounterSite')),
