@@ -3,9 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="9e83e2b1-b90d-4e66-89ad-ce47805d2dd1" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MoneyCounterSite/models.py" afterPath="$PROJECT_DIR$/MoneyCounterSite/models.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MoneyCounterSite/views.py" afterPath="$PROJECT_DIR$/MoneyCounterSite/views.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/moneycounter/urls.py" afterPath="$PROJECT_DIR$/moneycounter/urls.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -26,7 +23,7 @@
       <file leaf-file-name="views.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/MoneyCounterSite/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
+            <state relative-caret-position="-587">
               <caret line="47" column="51" lean-forward="false" selection-start-line="47" selection-start-column="51" selection-end-line="47" selection-end-column="51" />
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
@@ -338,7 +335,14 @@
       <option name="project" value="LOCAL" />
       <updated>1491250369341</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="add likes/dislikes and cost counters">
+      <created>1491252141937</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1491252141937</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -377,7 +381,8 @@
     <MESSAGE value="Vovan pidaras" />
     <MESSAGE value="add views with JsonResponse" />
     <MESSAGE value="add likes/dislikes counter" />
-    <option name="LAST_COMMIT_MESSAGE" value="add likes/dislikes counter" />
+    <MESSAGE value="add likes/dislikes and cost counters" />
+    <option name="LAST_COMMIT_MESSAGE" value="add likes/dislikes and cost counters" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -465,7 +470,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/MoneyCounterSite/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
+        <state relative-caret-position="-587">
           <caret line="47" column="51" lean-forward="false" selection-start-line="47" selection-start-column="51" selection-end-line="47" selection-end-column="51" />
           <folding>
             <element signature="e#0#35#0" expanded="true" />
