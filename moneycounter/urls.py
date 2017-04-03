@@ -16,11 +16,12 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 import MoneyCounterSite.urls
-from MoneyCounterSite.views import parties_list, party_detail
+from MoneyCounterSite.views import *
 
 urlpatterns = [
-    url(r'^party/list/$', parties_list, name='party_list'),
-    url(r'^party_detail/(?P<party_id>\d+)/$', party_detail, name='party_detail'),
+    url(r'^parties$', party_list, name='party_list'),
+    url(r'^friends/$', friends_list, name='friends_list'),
+    url(r'^party(?P<party_id>\d+)/$', party_detail, name='party_detail'),
     url(r'^', include(MoneyCounterSite.urls, namespace='MoneyCounterSite')),
     url(r'^admin/', admin.site.urls),
 ]
