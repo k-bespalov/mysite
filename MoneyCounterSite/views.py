@@ -1,13 +1,19 @@
 from django.shortcuts import render
 from django.http import Http404
+from django.http import JsonResponse
 from MoneyCounterSite.models import Party, Profile
 
 def parties_list(request):
     parties = Party.objects.all()[:20]
-    return render(
-        request, 'parties/party_list.html',
-        {'parties': parties}
-    )
+    # return render(
+    #     request, 'parties/party_list.html',
+    #     {'parties': parties}
+    # )
+    return JsonResponse({
+       'parties': [
+           {'id': p.id, 'name': p.name, 'date': p.datetime} for p in parties
+       ]
+    })
 
 def party_detail(request, party_id):
     try:
