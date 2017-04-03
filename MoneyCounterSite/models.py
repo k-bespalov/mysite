@@ -25,11 +25,6 @@ class Profile(models.Model):
         verbose_name_plural = 'Тусовщики'
 
 
-
-
-
-
-
 class FavouriteGoods(models.Model):
     name = models.CharField(max_length=200, verbose_name = 'Предпочтение', db_index = True)
     person = models.ManyToManyField(Profile, verbose_name = 'Чье предпочтение', db_index = True, blank = True)
@@ -40,11 +35,6 @@ class FavouriteGoods(models.Model):
     class Meta:
         verbose_name = 'Предпочтение'
         verbose_name_plural = 'Предпочтения'
-
-
-
-
-
 
 
 class Party(models.Model):
@@ -63,9 +53,6 @@ class Party(models.Model):
         verbose_name_plural = 'Тусовки'
 
 
-
-
-
 class Payment(models.Model):
     datetime = models.DateTimeField(verbose_name = 'Дата платежа', blank = True, null = True, default=timezone.now)
     p_user = models.ForeignKey(to=Profile, verbose_name = 'Чей платеж')
@@ -79,9 +66,6 @@ class Payment(models.Model):
         verbose_name_plural = 'Платежи'
 
 
-
-
-
 class Repayment(models.Model):
     who_pays = models.ForeignKey(to=Profile, related_name = 'who', verbose_name = 'Кого должен отдать денег')
     who_receives = models.ForeignKey(to=Profile, related_name = 'to_whom', verbose_name = 'Кому должен отдать денег')
@@ -92,10 +76,6 @@ class Repayment(models.Model):
     class Meta:
         verbose_name = 'Оплата'
         verbose_name_plural = 'Оплаты'
-
-
-
-
 
 
 class Like(models.Model):
