@@ -3,19 +3,20 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 
 class Profile(models.Model):
     user = models.OneToOneField(User)
-    friends = models.ManyToManyField("self", verbose_name = 'Друзья', db_index = True, blank = True)
-    photo = models.ImageField(upload_to = 'photos/', default = 'photos/None/no-img.jpg')
-    telephone_number = models.CharField(max_length = 12, verbose_name = 'Номер телефона', blank=True)
+    friends = models.ManyToManyField("self", verbose_name='Друзья', db_index=True, blank=True)
+    photo = models.ImageField(upload_to='photos/', default='photos/None/no-img.jpg')
+    telephone_number = models.CharField(min_length=12, max_length=12, verbose_name='Номер телефона', blank=True)
+
     # favourite_food = models.CharField(max_length = 200, verbose_name = 'Предпочтения в еде', db_index = True, blank=True)
     # favourite_drinkables = models.CharField(max_length = 200, verbose_name = 'Предпочтения в напитках', db_index = True, blank=True)
-    #likes = GenericRelation('MoneyCounterSite.Like', related_query_name='profiles', blank=True, null=True)
+    # likes = GenericRelation('MoneyCounterSite.Like', related_query_name='profiles', blank=True, null=True)
 
     def __str__(self):
         return self.user.username
@@ -26,8 +27,8 @@ class Profile(models.Model):
 
 
 class FavouriteGoods(models.Model):
-    name = models.CharField(max_length=200, verbose_name = 'Предпочтение', db_index = True)
-    person = models.ManyToManyField(Profile, verbose_name = 'Чье предпочтение', db_index = True, blank = True)
+    name = models.CharField(max_length=200, verbose_name='Предпочтение', db_index=True)
+    person = models.ManyToManyField(Profile, verbose_name='Чье предпочтение', db_index=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -38,12 +39,14 @@ class FavouriteGoods(models.Model):
 
 
 class Party(models.Model):
-    name = models.CharField(max_length = 200, verbose_name = 'Название тусовки')
-    datetime = models.DateTimeField(verbose_name = 'Дата проведения', db_index = True, blank = True, null = True)
-    place = models.CharField(max_length=200, verbose_name = 'Место проведения')
-    persons = models.ManyToManyField(to=Profile, verbose_name = 'Участники')
-    #total_cost = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Общая стоимость тусы', db_index = True, blank = True, null = True)
-    #likes = GenericRelation('MoneyCounterSite.Like', related_query_name='parties',  blank=True, null=True)
+    name = models.CharField(max_length=200, verbose_name='Название тусовки')
+    datetime = models.DateTimeField(verbose_name='Дата проведения', db_index=True, blank=True, null=True)
+    place = models.CharField(max_length=200, verbose_name='Место проведения')
+    persons = models.ManyToManyField(to=Profile, verbose_name='Участники')
+
+    # total_cost = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Общая стоимость тусы',
+    #    db_index = True, blank = True, null = True)
+    # likes = GenericRelation('MoneyCounterSite.Like', related_query_name='parties',  blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -54,12 +57,11 @@ class Party(models.Model):
 
 
 class Payment(models.Model):
-    datetime = models.DateTimeField(verbose_name = 'Дата платежа', blank = True, null = True, default=timezone.now)
-    p_user = models.ForeignKey(to=Profile, verbose_name = 'Чей платеж')
-    p_party = models.ForeignKey(to=Party, verbose_name = 'Для какой тусовки')
-    description = models.CharField(max_length=200, verbose_name = 'Описание платежа')
-    cost = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Сколько заплатил')
-
+    datetime = models.DateTimeField(verbose_name='Дата платежа', blank=True, null=True, default=timezone.now)
+    p_user = models.ForeignKey(to=Profile, verbose_name='Чей платеж')
+    p_party = models.ForeignKey(to=Party, verbose_name='Для какой тусовки')
+    description = models.CharField(max_length=200, verbose_name='Описание платежа')
+    cost = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Сколько заплатил')
 
     class Meta:
         verbose_name = 'Платеж'
@@ -67,10 +69,10 @@ class Payment(models.Model):
 
 
 class Repayment(models.Model):
-    who_pays = models.ForeignKey(to=Profile, related_name = 'who', verbose_name = 'Кого должен отдать денег')
-    who_receives = models.ForeignKey(to=Profile, related_name = 'to_whom', verbose_name = 'Кому должен отдать денег')
-    which_party = models.ForeignKey(to=Party, verbose_name = 'За какую тусовку')
-    price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name = 'Сколько должен отдать денег')
+    who_pays = models.ForeignKey(to=Profile, related_name='who', verbose_name='Кого должен отдать денег')
+    who_receives = models.ForeignKey(to=Profile, related_name='to_whom', verbose_name='Кому должен отдать денег')
+    which_party = models.ForeignKey(to=Party, verbose_name='За какую тусовку')
+    price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Сколько должен отдать денег')
     is_payed = models.BooleanField(default=True)
 
     class Meta:
@@ -80,7 +82,7 @@ class Repayment(models.Model):
 
 class Like(models.Model):
     positive = models.BooleanField(default=True)
-    person = models.ForeignKey(to=Profile, verbose_name  = 'Кто поставил')
+    person = models.ForeignKey(to=Profile, verbose_name='Кто поставил')
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
@@ -88,6 +90,6 @@ class Like(models.Model):
     class Meta:
         verbose_name = 'Лайк/Дизлайк'
         verbose_name_plural = 'Лайки/Дизлайки'
-    #
-    # def __str__(self):
-    #     return self.flag
+        #
+        # def __str__(self):
+        #     return self.flag
