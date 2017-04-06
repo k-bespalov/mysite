@@ -69,6 +69,7 @@ def show_party_participants(request, party_id):
 
 def show_profile(request, id):
     profile = Profile.objects.get(id = id)
+    goods = FavouriteGoods.objects.filter(person=id).values_list('name', flat = True)
     user = profile.user
     return JsonResponse(
         {
@@ -78,6 +79,7 @@ def show_profile(request, id):
             'telephone_number': profile.telephone_number,
             'likes': like_dislike_counter(3, id)[0],
             'dislikes': like_dislike_counter(3, id)[1],
+            'favourite_goods': [item  for item in goods]
         }
     )
 
