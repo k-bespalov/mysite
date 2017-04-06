@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -26,10 +25,9 @@ SECRET_KEY = '6wh043ecp%!aggoca0f2xz1c=^m9r$lgx$xf$oa2@+5cggm_kt'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-'192.168.1.34',
-'127.0.0.1',
+    '192.168.1.34',
+    '127.0.0.1',
 ]
-
 
 # Application definition
 
@@ -75,7 +73,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'moneycounter.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
@@ -83,14 +80,13 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'money_counter1',
-		'USER': 'root',
+        'USER': 'root',
         'PASSWORD': '112358',
-		'OPTIONS': {'charset': 'utf8mb4'}
-        #'HOST': '127.0.0.1',
-        #'PORT': '5432',
+        'OPTIONS': {'charset': 'utf8mb4'}
+        # 'HOST': '127.0.0.1',
+        # 'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -110,7 +106,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
@@ -124,8 +119,9 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/Users/konstantin/web_sphere/mysite/media'

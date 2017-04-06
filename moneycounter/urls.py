@@ -15,11 +15,13 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from django.contrib.auth.views import login, logout
 import MoneyCounterSite.urls
 from MoneyCounterSite.views import *
 
 urlpatterns = [
     url(r'^parties$', party_list, name='party_list'),
+    url(r'^parties/add/$', add_party, name='add_party'),
     url(r'^id(?P<id>\d+)/$', show_profile, name='show_profile'),
     url(r'^friends$', friends_list, name='friends_list'),
     url(r'^payments$', my_payments_list, name='my_payments_list'),
@@ -27,4 +29,6 @@ urlpatterns = [
     url(r'^party(?P<party_id>\d+)/$', party_detail, name='party_detail'),
     url(r'^', include(MoneyCounterSite.urls, namespace='MoneyCounterSite')),
     url(r'^admin/', admin.site.urls),
+    url(r'^login/', login, {'template_name': 'core/login.html'}),
+    url(r'^logout/', logout, {'template_name': 'core/logout.html'}),
 ]

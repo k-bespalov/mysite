@@ -2,9 +2,11 @@
 
 from django import forms
 
+from MoneyCounterSite.models import Profile, Party
+
 
 class AddPayment(forms.Form):
-    party = forms.CharField(label='Название тусовки')
+    party = forms.ChoiceField(choices=Party.objects.all())
     description = forms.CharField(label='Описание платежа', max_length=200)
     cost = forms.DecimalField(label='Стоимость', max_digits=9, decimal_places=2)
 
@@ -13,17 +15,23 @@ class AddParty(forms.Form):
     name = forms.CharField(label='Название тусы')
     datetime = forms.DateTimeField(label='Дата тусовки')
     place = forms.CharField(label='Место проведения')
-    # participants = forms.ModelMultipleChoiceField
+    participants = forms.ModelMultipleChoiceField(queryset=Profile.objects.all())
+
+
+class EditParty(forms.Form):
+    name = forms.CharField(label='Название тусы')
+    datetime = forms.DateTimeField(label='Дата тусовки')
+    place = forms.CharField(label='Место проведения')
 
 
 class AddFavouriteGoods(forms.Form):
     name = forms.CharField(label='Предпочтение или несколько')
 
 
-class EditProfile(forms.Form)
+class EditProfile(forms.Form):
     first_name = forms.CharField(label='Введите имя')
     last_name = forms.CharField(label='Введите фамилию')
-    number = forms.CharField(label='Номер телефона', min_length=12, max_length=12)
+    telephone_number = forms.CharField(label='Номер телефона', min_length=12, max_length=12)
     photo = forms.ImageField(label='Фото профиля')
 
 
@@ -49,4 +57,3 @@ class RegistrationForm(forms.Form):
     )
     captcha = forms.IntegerField(label='12 + ten = ',
                                  widget=forms.TextInput(attrs={'class': 'special'}))
-
