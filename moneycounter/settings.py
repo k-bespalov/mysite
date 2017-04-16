@@ -27,6 +27,11 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '192.168.1.34',
     '127.0.0.1',
+    '192.168.1.36',
+    '10.4.27.50',
+    '172.20.10.9',
+    '192.168.15.54',
+    '0.0.0.0',
 ]
 
 # Application definition
@@ -40,13 +45,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'debug_toolbar',
+    'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -54,6 +62,19 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'moneycounter.urls'
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_CREDENTIALS = True
+
+# You'll probably want to vary this depending on environment.
+CORS_ORIGIN_WHITELIST = ('localhost:4200')
+
+# CSRF_TRUSTED_ORIGINS = [
+#     'http://localhost/',
+# ]
+
+# CSRF_HEADER_NAME = 'HTTP_X_XSRF_TOKEN'
 
 TEMPLATES = [
     {
@@ -71,10 +92,23 @@ TEMPLATES = [
     },
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+}
+
 WSGI_APPLICATION = 'moneycounter.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
+
+APPEND_SLASH = False
 
 DATABASES = {
     'default': {
@@ -87,6 +121,8 @@ DATABASES = {
         # 'PORT': '5432',
     }
 }
+
+# CSRF_HEADER_NAME = 'HTTP_X_XSRF_TOKEN'
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -109,7 +145,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
-LANGUAGE_CODE = 'ru'
+LANGUAGE_CODE = 'en'
 
 TIME_ZONE = 'Europe/Moscow'
 
@@ -123,5 +159,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/Users/konstantin/web_sphere/mysite/media'
+MEDIA_URL = 'http://127.0.0.1:8000/web_sphere/mysite/media/'
+MEDIA_ROOT = 'media/'

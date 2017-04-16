@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
+from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login as auth_login
+import json
 from django.shortcuts import render, redirect
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.http import JsonResponse
 from django.contrib import auth
 from django.template.context_processors import csrf
 from django.db import IntegrityError
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.views.decorators.http import require_POST
 
 from MoneyCounterSite.forms import RegistrationForm, AddPayment
@@ -13,6 +17,7 @@ from MoneyCounterSite.models import *
 from .forms import AddParty
 
 
+# @login_required(login_url="/login/")
 def party_list(request):
     parties = Party.objects.filter(persons__user__username=auth.get_user(request).username)[:20]
     return JsonResponse({
@@ -21,11 +26,12 @@ def party_list(request):
                 'id': p.id,
                 'name': p.name,
                 'datetime': p.datetime,
-                'cost': count_cost_party(p.id),
+                'place': p.place,
                 'participants': len(Profile.objects.filter(party=p.id))
             } for p in parties
         ]
     })
+
 
 @require_POST
 @csrf_protect
@@ -68,10 +74,10 @@ def friends_list(request):
         'friends': [
             {
                 'id': f,
+                'photo': Profile.objects.get(id=f).photo.url,
                 'username': User.objects.filter(profile=f).values_list('username', flat=True)[0],
-                'first_name': User.objects.filter(profile=f).values_list('first_name', flat=True)[0],
-                'last_name': User.objects.filter(profile=f).values_list('last_name', flat=True)[0],
-                # 'photo': f.photo}
+                'name': ' '.join([User.objects.filter(profile=f).values_list('first_name', flat=True)[0],
+                        User.objects.filter(profile=f).values_list('last_name', flat=True)[0] ]),
             } for f in friends
         ]
     })
@@ -84,6 +90,7 @@ def party_detail(request, party_id):
         raise Http404
     return JsonResponse(
         {
+            'id': party.id,
             'name': party.name,
             'datetime': party.datetime,
             'place': party.place,
@@ -121,6 +128,7 @@ def show_profile(request, id):
             'last_name': user.last_name,
             'telephone_number': profile.telephone_number,
             'likes': like_dislike_counter(3, id)[0],
+            'photo': profile.photo.path,
             'dislikes': like_dislike_counter(3, id)[1],
             'favourite_goods': [item for item in goods]
         }
@@ -202,24 +210,63 @@ def count_cost_party(party_id):
 #         args['form'] = RegistrationForm()
 #     return render(request, 'core/registration.html', args)
 
+def binary_to_dict(the_binary):
+    jsn = ''.join(chr(int(x, 2)) for x in the_binary.split())
+    d = json.loads(jsn)
+    return d
 
-# def login(request):
-#     args = {}
-#     args.update(csrf(request))
+
+# @csrf_exempt
+# def my_view(request):
 #     if request.POST:
-#         username = request.POST.get('username', '')
-#         password = request.POST.get('password', '')
-#         user = auth.authenticate(username=username, password=password)
+#         print(request.body)
+#         req_body = json.loads(request.body)
+#         # req_body = binary_to_dict(request.body)
+#         print(req_body)
+#         username = req_body['username']
+#         # print(username)
+#         password = req_body['password']
+#         # print(password)
+#         user = authenticate(username=username, password=password)
 #         if user is not None:
-#             auth.login(request, user)
-#             return redirect('/home/')
+#             login(request, user)
+#             print('ok')
+#             return HttpResponseRedirect('/parties')
+#             # return redirect('/parties')
 #         else:
-#             args['login_error'] = "Тусовщие не найден"
-#             return render(request, 'core/login.html', args)
+#             print('no ok')
+#             return render(request, 'core/login.html')
 #     else:
-#         return render(request, 'core/login.html', args)
-
-
+#         return HttpResponse(status=200)
+# @csrf_protect
+def my_login(request):
+    # print(request.method == 'POST')
+    if request.method == 'GET':
+        return HttpResponse(status=200)
+    if request.method == 'POST':
+        # print('ok')
+        # username = request.POST.get('username', '')
+        # print(username)
+        # password = request.POST.get('password', '')
+        req_body = json.loads(request.body)
+        # req_body = binary_to_dict(request.body)
+        # print(req_body)
+        username = req_body['username']
+        # print(username)
+        password = req_body['password']
+        # print(password)
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            auth_login(request, user)
+            print('ok')
+            return HttpResponse(status=200)
+        else:
+            # args['login_error'] = "Тусовщие не найден"
+            return HttpResponse(status=304)
+    else:
+        return HttpResponse(status=403)
+#
+#
 # def logout(request):
 #     auth.logout(request)
 #     return redirect('/')

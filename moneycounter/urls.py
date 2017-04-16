@@ -14,10 +14,17 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from rest_framework_jwt.views import obtain_jwt_token
 from django.contrib import admin
-from django.contrib.auth.views import login, logout
+from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+import moneycounter.settings
+from django.conf import settings
+from django.contrib.auth.views import logout
 import MoneyCounterSite.urls
-from MoneyCounterSite.views import *
+from MoneyCounterSite.views import party_list, add_party, my_login, show_party_participants, show_profile, friends_list, \
+    my_payments_list, party_detail
 
 urlpatterns = [
     url(r'^parties$', party_list, name='party_list'),
@@ -29,6 +36,18 @@ urlpatterns = [
     url(r'^party(?P<party_id>\d+)/$', party_detail, name='party_detail'),
     url(r'^', include(MoneyCounterSite.urls, namespace='MoneyCounterSite')),
     url(r'^admin/', admin.site.urls),
-    url(r'^login/', login, {'template_name': 'core/login.html'}),
+    url(r'^login', my_login),  # {'template_name': 'core/login.html'}),
     url(r'^logout/', logout, {'template_name': 'core/logout.html'}),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^api-token-auth/', obtain_jwt_token),
+    # url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT})
 ]
+
+if settings.DEBUG:
+
+    if settings.MEDIA_ROOT:
+        urlpatterns += static(settings.MEDIA_URL,
+
+                              document_root=settings.MEDIA_ROOT)
+
+urlpatterns += staticfiles_urlpatterns()
