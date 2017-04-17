@@ -15,7 +15,7 @@ class AddParty(forms.Form):
     name = forms.CharField(label='Название тусы')
     datetime = forms.DateTimeField(label='Дата тусовки')
     place = forms.CharField(label='Место проведения')
-    participants = forms.ModelMultipleChoiceField(queryset=Profile.objects.all())
+    # participants = forms.ModelMultipleChoiceField(queryset=Profile.objects.all())
 
 
 class EditParty(forms.Form):

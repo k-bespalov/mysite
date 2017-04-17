@@ -28,7 +28,7 @@ from MoneyCounterSite.views import party_list, add_party, my_login, show_party_p
 
 urlpatterns = [
     url(r'^parties$', party_list, name='party_list'),
-    url(r'^parties/add/$', add_party, name='add_party'),
+    url(r'^party/add$', add_party, name='add_party'),
     url(r'^id(?P<id>\d+)/$', show_profile, name='show_profile'),
     url(r'^friends$', friends_list, name='friends_list'),
     url(r'^payments$', my_payments_list, name='my_payments_list'),
@@ -38,9 +38,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^login', my_login),  # {'template_name': 'core/login.html'}),
     url(r'^logout/', logout, {'template_name': 'core/logout.html'}),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^api-token-auth/', obtain_jwt_token),
-    # url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT})
 ]
 
 if settings.DEBUG:

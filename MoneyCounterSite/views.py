@@ -27,18 +27,19 @@ def party_list(request):
                 'name': p.name,
                 'datetime': p.datetime,
                 'place': p.place,
-                'participants': len(Profile.objects.filter(party=p.id))
+                'participants': len(Profile.objects.filter(party=p.id)),
+                'cost': count_cost_party(p.id),
             } for p in parties
         ]
     })
 
 
-@require_POST
-@csrf_protect
+
 def add_party(request):
-    args = {}
-    args.update(csrf(request))
-    form = AddParty(request.POST)
+    # print(json.loads(request.body))
+    form = AddParty(json.loads(request.body))
+    print(form)
+    print(form.is_valid())
     if form.is_valid():
         name = form.cleaned_data['name']
         datetime = form.cleaned_data['datetime']
@@ -153,6 +154,7 @@ def my_payments_list(request):
             {
                 'datetime': payment.datetime,
                 'party': payment.p_party.name,
+                'party_id': payment.p_party_id,
                 'description': payment.description,
                 'cost': payment.cost
             } for payment in payments
