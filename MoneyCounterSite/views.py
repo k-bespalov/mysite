@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as auth_login
 import json
+import dateutil.parser as dt
 from django.shortcuts import render, redirect
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.http import JsonResponse
@@ -19,7 +20,7 @@ from .forms import AddParty
 
 # @login_required(login_url="/login/")
 def party_list(request):
-    parties = Party.objects.filter(persons__user__username=auth.get_user(request).username)[:20]
+    parties = Party.objects.filter(persons__user__username=auth.get_user(request).username).order_by('-datetime')[:20]
     return JsonResponse({
         'parties': [
             {
@@ -29,23 +30,26 @@ def party_list(request):
                 'place': p.place,
                 'participants': len(Profile.objects.filter(party=p.id)),
                 'cost': count_cost_party(p.id),
+                'persons': [{'photo': person.photo.url} for person in
+                            Profile.objects.filter(party=p)]
+
             } for p in parties
         ]
     })
 
 
-
 def add_party(request):
-    # print(json.loads(request.body))
-    form = AddParty(json.loads(request.body))
-    print(form)
-    print(form.is_valid())
+    tmp = json.loads(request.body)
+    tmp['datetime'] = dt.parse(tmp['datetime'])
+    form = AddParty(tmp)
     if form.is_valid():
         name = form.cleaned_data['name']
         datetime = form.cleaned_data['datetime']
         place = form.cleaned_data['place']
         p = Party(name=name, datetime=datetime, place=place)
         p.save()
+        prof = Profile.objects.get(user__username=auth.get_user(request).username)
+        p.persons.add(prof)
         return HttpResponse(status=200)
     else:
         return HttpResponse(status=403)
