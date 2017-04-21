@@ -10,7 +10,7 @@ from django.utils import timezone
 class Profile(models.Model):
     user = models.OneToOneField(User)
     friends = models.ManyToManyField("self", verbose_name='Друзья', db_index=True, blank=True)
-    photo = models.ImageField(upload_to='media/photos/', default='media/photos/None/no-img.jpg')
+    photo = models.ImageField(upload_to='photos/', default='photos/None/no-img.jpg')
     telephone_number = models.CharField(max_length=12, verbose_name='Номер телефона', blank=True)
 
     # favourite_food = models.CharField(max_length = 200, verbose_name = 'Предпочтения в еде', db_index = True, blank=True)

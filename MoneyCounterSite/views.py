@@ -48,25 +48,35 @@ def add_party(request):
         place = form.cleaned_data['place']
         p = Party(name=name, datetime=datetime, place=place)
         p.save()
-        prof = Profile.objects.get(user__username=auth.get_user(request).username)
-        p.persons.add(prof)
+        profile = Profile.objects.get(user__username=auth.get_user(request).username)
+        p.persons.add(profile)
         return HttpResponse(status=200)
     else:
         return HttpResponse(status=403)
 
 
-@require_POST
-@csrf_protect
+# @require_POST
+# @csrf_protect
 def add_payment(request):
-    args = {}
-    args.update(csrf(request))
     form = AddPayment(request.POST)
     if form.is_valid():
-        party = form.cleaned_data['party']
+        id = form.cleaned_data['id']
         description = form.cleaned_data['description']
         cost = form.cleaned_data['cost']
-        p = Payment(party=party, description=description, cost=cost)
+        p = Payment(description=description, cost=cost)
         p.save()
+        profile = Profile.objects.get(user__username=auth.get_user(request).username)
+        party = Party.objects.get(id=id)
+        p.p_user = profile
+        p.p_party = party
+        participants = Profile.objects.filter(party__id=id)
+        for participant in participants:
+            if participant.id != id:
+                r = Repayment(price=(cost/len(participants)))
+                r.save()
+                r.who_pays = participant
+                r.who_receives = profile
+                r.which_party = party
         return HttpResponse(status=200)
     else:
         return HttpResponse(status=403)
@@ -152,7 +162,7 @@ def like_dislike_counter(content, object):
 
 
 def my_payments_list(request):
-    payments = Payment.objects.filter(p_user__user__username=auth.get_user(request).username)[:20]
+    payments = Payment.objects.filter(p_user__user__username=auth.get_user(request).username).order_by('-datetime')[:20]
     return JsonResponse({
         'payments': [
             {
@@ -160,7 +170,9 @@ def my_payments_list(request):
                 'party': payment.p_party.name,
                 'party_id': payment.p_party_id,
                 'description': payment.description,
-                'cost': payment.cost
+                'cost': payment.cost,
+                'persons': [{'photo': person.photo.url} for person in
+                            Profile.objects.filter(party=payment.p_party_id)]
             } for payment in payments
         ]
     })
