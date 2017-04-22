@@ -13,9 +13,8 @@ from django.db import IntegrityError
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.views.decorators.http import require_POST
 
-from MoneyCounterSite.forms import RegistrationForm, AddPayment
+from MoneyCounterSite.forms import RegistrationForm, AddPayment, AddParty
 from MoneyCounterSite.models import *
-from .forms import AddParty
 
 
 # @login_required(login_url="/login/")
@@ -31,7 +30,7 @@ def party_list(request):
                 'participants': len(Profile.objects.filter(party=p.id)),
                 'cost': count_cost_party(p.id),
                 'persons': [{'photo': person.photo.url} for person in
-                            Profile.objects.filter(party=p)]
+                            Profile.objects.filter(party=p)],
 
             } for p in parties
         ]
@@ -72,7 +71,7 @@ def add_payment(request):
         participants = Profile.objects.filter(party__id=id)
         for participant in participants:
             if participant.id != id:
-                r = Repayment(price=(cost/len(participants)))
+                r = Repayment(price=(cost / len(participants)))
                 r.save()
                 r.who_pays = participant
                 r.who_receives = profile
@@ -92,7 +91,7 @@ def friends_list(request):
                 'photo': Profile.objects.get(id=f).photo.url,
                 'username': User.objects.filter(profile=f).values_list('username', flat=True)[0],
                 'name': ' '.join([User.objects.filter(profile=f).values_list('first_name', flat=True)[0],
-                        User.objects.filter(profile=f).values_list('last_name', flat=True)[0] ]),
+                                  User.objects.filter(profile=f).values_list('last_name', flat=True)[0]]),
             } for f in friends
         ]
     })
@@ -110,11 +109,19 @@ def party_detail(request, party_id):
             'datetime': party.datetime,
             'place': party.place,
             'cost': count_cost_party(party_id),
-            'likes': like_dislike_counter(2, party_id)[0],
-            'dislikes': like_dislike_counter(2, party_id)[1],
+            # 'likes': like_dislike_counter(2, party_id)[0],
+            # 'dislikes': like_dislike_counter(2, party_id)[1],
             'persons': [{'id': person.id, 'first_name': User.objects.get(id=person.user_id).first_name,
                          'last_name': User.objects.get(id=person.user_id).last_name} for person in
-                        Profile.objects.filter(party=party_id)]
+                        Profile.objects.filter(party=party_id)],
+            'payments': [
+                {'who': ' '.join([User.objects.filter(profile__payment=payment).values_list('first_name', flat=True)[0],
+                                  User.objects.filter(profile__payment=payment).values_list('last_name', flat=True)[0]]),
+                 'photo': Profile.objects.get(payment=payment).photo.url,
+                 'datetime': payment.datetime,
+                 'description': payment.description,
+                 'cost': payment.cost
+                 } for payment in Payment.objects.filter(p_party=party.id).order_by('-datetime')],
         })
 
 
@@ -142,9 +149,9 @@ def show_profile(request, id):
             'first_name': user.first_name,
             'last_name': user.last_name,
             'telephone_number': profile.telephone_number,
-            'likes': like_dislike_counter(3, id)[0],
+            # 'likes': like_dislike_counter(3, id)[0],
             'photo': profile.photo.path,
-            'dislikes': like_dislike_counter(3, id)[1],
+            # 'dislikes': like_dislike_counter(3, id)[1],
             'favourite_goods': [item for item in goods]
         }
     )
@@ -283,6 +290,7 @@ def my_login(request):
             return HttpResponse(status=304)
     else:
         return HttpResponse(status=403)
+
 #
 #
 # def logout(request):
