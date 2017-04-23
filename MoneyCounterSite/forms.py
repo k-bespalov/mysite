@@ -6,7 +6,7 @@ from MoneyCounterSite.models import Profile, Party
 
 
 class AddPayment(forms.Form):
-    party = forms.ChoiceField(choices=Party.objects.all())
+    id = forms.IntegerField()
     description = forms.CharField(label='Описание платежа', max_length=200)
     cost = forms.DecimalField(label='Стоимость', max_digits=9, decimal_places=2)
 

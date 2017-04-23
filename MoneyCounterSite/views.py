@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.http import JsonResponse
 from django.contrib import auth
+from datetime import tzinfo, timedelta, datetime
 from django.template.context_processors import csrf
 from django.db import IntegrityError
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
@@ -57,28 +58,38 @@ def add_party(request):
 # @require_POST
 # @csrf_protect
 def add_payment(request):
-    form = AddPayment(request.POST)
-    if form.is_valid():
-        id = form.cleaned_data['id']
-        description = form.cleaned_data['description']
-        cost = form.cleaned_data['cost']
-        p = Payment(description=description, cost=cost)
-        p.save()
-        profile = Profile.objects.get(user__username=auth.get_user(request).username)
-        party = Party.objects.get(id=id)
-        p.p_user = profile
-        p.p_party = party
-        participants = Profile.objects.filter(party__id=id)
-        for participant in participants:
-            if participant.id != id:
-                r = Repayment(price=(cost / len(participants)))
-                r.save()
-                r.who_pays = participant
-                r.who_receives = profile
-                r.which_party = party
-        return HttpResponse(status=200)
-    else:
-        return HttpResponse(status=403)
+    if request.method == 'GET':
+        # print('ok')
+        date = datetime.today()
+        # print(date.month)
+        parties = Party.objects.filter(persons__user__username=auth.get_user(request).username,
+                                       datetime__year=date.year).order_by('datetime')
+        return JsonResponse({
+            'parties': [
+                {
+                    'id': party.id,
+                    'name': party.name
+                } for party in parties
+            ]
+        })
+    if request.method == 'POST':
+        form = AddPayment(json.loads(request.body))
+        if form.is_valid():
+            id = form.cleaned_data['id']
+            description = form.cleaned_data['description']
+            cost = form.cleaned_data['cost']
+            profile = Profile.objects.get(user__username=auth.get_user(request).username)
+            party = Party.objects.get(id=id)
+            p = Payment(p_user=profile, p_party=party, description=description, cost=cost)
+            p.save()
+            participants = Profile.objects.filter(party__id=id)
+            for participant in participants:
+                if participant.id != id:
+                    r = Repayment(who_pays=participant, who_receives=profile, which_party=party, price=(cost / len(participants)))
+                    r.save()
+            return HttpResponse(status=200)
+        else:
+            return HttpResponse(status=403)
 
 
 def friends_list(request):
@@ -183,6 +194,8 @@ def my_payments_list(request):
             } for payment in payments
         ]
     })
+
+
 
 
 def count_cost_party(party_id):
