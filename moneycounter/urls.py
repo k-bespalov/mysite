@@ -24,7 +24,7 @@ from django.conf import settings
 from django.contrib.auth.views import logout
 import MoneyCounterSite.urls
 from MoneyCounterSite.views import party_list, add_party, my_login, show_party_participants, show_profile, friends_list, \
-    my_payments_list, party_detail, add_payment
+    my_payments_list, party_detail, add_payment, get_payers
 
 urlpatterns = [
     url(r'^parties$', party_list, name='party_list'),
@@ -32,6 +32,7 @@ urlpatterns = [
     url(r'^payment/add$', add_payment, name='add_payment'),
     url(r'^id(?P<id>\d+)/$', show_profile, name='show_profile'),
     url(r'^friends$', friends_list, name='friends_list'),
+    url(r'^get/payers$', get_payers, name='get_payers'),
     url(r'^payments$', my_payments_list, name='my_payments_list'),
     url(r'^participants(?P<party_id>\d+)/$', show_party_participants, name='show_party_participants'),
     url(r'^party(?P<party_id>\d+)$', party_detail, name='party_detail'),

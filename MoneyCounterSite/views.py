@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.http import JsonResponse
 from django.contrib import auth
+from django.db.models import Q
 from datetime import tzinfo, timedelta, datetime
 from django.template.context_processors import csrf
 from django.db import IntegrityError
@@ -73,23 +74,50 @@ def add_payment(request):
             ]
         })
     if request.method == 'POST':
-        form = AddPayment(json.loads(request.body))
+        tmp = json.loads(request.body)
+        form = AddPayment(tmp)
+        print(form.errors)
         if form.is_valid():
             id = form.cleaned_data['id']
             description = form.cleaned_data['description']
             cost = form.cleaned_data['cost']
+            payers = [int(x) for x in tmp['payers']]
+            print(payers)
             profile = Profile.objects.get(user__username=auth.get_user(request).username)
             party = Party.objects.get(id=id)
             p = Payment(p_user=profile, p_party=party, description=description, cost=cost)
             p.save()
-            participants = Profile.objects.filter(party__id=id)
-            for participant in participants:
-                if participant.id != id:
-                    r = Repayment(who_pays=participant, who_receives=profile, which_party=party, price=(cost / len(participants)))
-                    r.save()
-            return HttpResponse(status=200)
+            if payers != []:
+                participants = []
+                for payer in payers:
+                    participants.append(Profile.objects.get(id=payer))
+                for participant in participants:
+                        r = Repayment(who_pays=participant, who_receives=profile, which_party=party,
+                                      price=(cost / (len(participants) + 1)))
+                        r.save()
+                return HttpResponse(status=200)
+            else:
+                participants = Profile.objects.filter(~Q(user__username='konstantin')).filter(party__id=id)
+                for participant in participants:
+                        r = Repayment(who_pays=participant, who_receives=profile, which_party=party,
+                                      price=(cost / (len(participants) + 1)))
+                        r.save()
+                return HttpResponse(status=201)
         else:
             return HttpResponse(status=403)
+
+
+def get_payers(request):
+    id = json.loads(request.body)
+    payers = Profile.objects.filter(~Q(user__username='konstantin')).filter(party__id=id)
+    response_data = {
+        'payers': [{
+            'id': payer.id,
+            'name': ' '.join([User.objects.filter(profile=payer.id).values_list('first_name', flat=True)[0],
+                              User.objects.filter(profile=payer.id).values_list('last_name', flat=True)[0]]),
+        } for payer in payers]
+    }
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
 def friends_list(request):
@@ -127,7 +155,8 @@ def party_detail(request, party_id):
                         Profile.objects.filter(party=party_id)],
             'payments': [
                 {'who': ' '.join([User.objects.filter(profile__payment=payment).values_list('first_name', flat=True)[0],
-                                  User.objects.filter(profile__payment=payment).values_list('last_name', flat=True)[0]]),
+                                  User.objects.filter(profile__payment=payment).values_list('last_name', flat=True)[
+                                      0]]),
                  'photo': Profile.objects.get(payment=payment).photo.url,
                  'datetime': payment.datetime,
                  'description': payment.description,
@@ -194,8 +223,6 @@ def my_payments_list(request):
             } for payment in payments
         ]
     })
-
-
 
 
 def count_cost_party(party_id):
