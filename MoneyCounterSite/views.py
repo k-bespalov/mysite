@@ -40,20 +40,34 @@ def party_list(request):
 
 
 def add_party(request):
-    tmp = json.loads(request.body)
-    tmp['datetime'] = dt.parse(tmp['datetime'])
-    form = AddParty(tmp)
-    if form.is_valid():
-        name = form.cleaned_data['name']
-        datetime = form.cleaned_data['datetime']
-        place = form.cleaned_data['place']
-        p = Party(name=name, datetime=datetime, place=place)
-        p.save()
-        profile = Profile.objects.get(user__username=auth.get_user(request).username)
-        p.persons.add(profile)
-        return HttpResponse(status=200)
-    else:
-        return HttpResponse(status=403)
+    if request.method == 'GET':
+        friends = Profile.objects.filter(friends__user__id=request.user.id)
+        response_data = {
+            'friends': [{
+                'id': friend.id,
+                'name': ' '.join([User.objects.filter(profile=friend.id).values_list('first_name', flat=True)[0],
+                                  User.objects.filter(profile=friend.id).values_list('last_name', flat=True)[0]]),
+            } for friend in friends]
+        }
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
+    if request.method == 'POST':
+        tmp = json.loads(request.body)
+        tmp['datetime'] = dt.parse(tmp['datetime'])
+        form = AddParty(tmp)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            datetime = form.cleaned_data['datetime']
+            place = form.cleaned_data['place']
+            p = Party(name=name, datetime=datetime, place=place)
+            p.save()
+            participants_id = tmp['participants']
+            profile = Profile.objects.get(user__username=auth.get_user(request).username)
+            p.persons.add(profile)
+            for id in participants_id:
+                p.persons.add(Profile.objects.get(id=id))
+            return HttpResponse(status=200)
+        else:
+            return HttpResponse(status=403)
 
 
 # @require_POST
@@ -90,10 +104,11 @@ def add_payment(request):
             if payers != []:
                 participants = []
                 for payer in payers:
-                    participants.append(Profile.objects.get(id=payer))
+                    if Profile.objects.get(user__id=request.user.id).id != payer:
+                        participants.append(Profile.objects.get(id=payer))
                 for participant in participants:
                         r = Repayment(who_pays=participant, who_receives=profile, which_party=party,
-                                      price=(cost / (len(participants) + 1)))
+                                      price=(cost / len(payers)))
                         r.save()
                 return HttpResponse(status=200)
             else:
@@ -109,7 +124,7 @@ def add_payment(request):
 
 def get_payers(request):
     id = json.loads(request.body)
-    payers = Profile.objects.filter(~Q(user__username='konstantin')).filter(party__id=id)
+    payers = Profile.objects.filter(party__id=id)
     response_data = {
         'payers': [{
             'id': payer.id,
@@ -165,6 +180,28 @@ def party_detail(request, party_id):
         })
 
 
+def change_friend_status(request):
+    if request.method == 'POST':
+        id = json.loads(request.body)['id']
+        profile = Profile.objects.get(user__id=auth.get_user(request).id)
+        try:
+            friend = profile.friends.get(user__id__exact=id)
+            profile.friends.remove(friend)
+            # return JsonResponse({
+            #     'status': False
+            # })
+        except Profile.DoesNotExist:
+            friend = Profile.objects.get(user__id=id)
+            profile.friends.add(friend)
+
+            # return JsonResponse({
+            #     'friend_status': True
+            # })
+        return HttpResponse(status=200)
+    else:
+        return Http404
+
+
 def show_party_participants(request, party_id):
     participants = Profile.objects.filter(party__id=party_id).values_list('id', flat=True)[:20]
     return JsonResponse({
@@ -180,21 +217,68 @@ def show_party_participants(request, party_id):
 
 
 def show_profile(request, id):
-    profile = Profile.objects.get(id=id)
-    goods = FavouriteGoods.objects.filter(person=id).values_list('name', flat=True)
-    user = profile.user
-    return JsonResponse(
-        {
-            'username': user.username,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'telephone_number': profile.telephone_number,
-            # 'likes': like_dislike_counter(3, id)[0],
-            'photo': profile.photo.path,
-            # 'dislikes': like_dislike_counter(3, id)[1],
-            'favourite_goods': [item for item in goods]
-        }
-    )
+    # print(id)
+    # print(Profile.objects.get(user__id=request.user.id).id)
+    # print(int(id) == Profile.objects.get(user__id=request.user.id).id)
+    profile = Profile.objects.get(id=int(id))
+    goods = FavouriteGoods.objects.filter(person=int(id)).values_list('name', flat=True)
+    if int(id) == Profile.objects.get(user=auth.get_user(request)).id:
+        # profile = Profile.objects.get(user__id=auth.get_user(request).id)
+
+        return JsonResponse(
+            {
+                'name': ' '.join([User.objects.filter(profile=int(id)).values_list('first_name', flat=True)[0],
+                                  User.objects.filter(profile=int(id)).values_list('last_name', flat=True)[0]]),
+                'photo': profile.photo.url,
+                'favourite_goods': [item for item in goods]
+            }
+        )
+    else:
+        return JsonResponse(
+            {
+                'id': profile.id,
+                'name': ' '.join([User.objects.filter(profile=int(id)).values_list('first_name', flat=True)[0],
+                                  User.objects.filter(profile=int(id)).values_list('last_name', flat=True)[0]]),
+                'photo': profile.photo.url,
+                'favourite_goods': [item for item in goods],
+                'friend_status': Profile.objects.get(id=Profile.objects.get(user=auth.get_user(request)).id).friends.filter(user__id=int(id)).exists()
+            }
+        )
+    # return HttpResponse(status=201)
+
+
+    # profile = Profile.objects.get(id=id)
+    # goods = FavouriteGoods.objects.filter(person=id).values_list('name', flat=True)
+    # user = profile.user
+    # return JsonResponse(
+    #     {
+    #         'username': user.username,
+    #         'first_name': user.first_name,
+    #         'last_name': user.last_name,
+    #         'telephone_number': profile.telephone_number,
+    #         # 'likes': like_dislike_counter(3, id)[0],
+    #         'photo': profile.photo.path,
+    #         # 'dislikes': like_dislike_counter(3, id)[1],
+    #         'favourite_goods': [item for item in goods]
+    #     }
+    # )
+
+
+def show_my_profile_id(request):
+    id = Profile.objects.get(user__id=auth.get_user(request).id).id
+    return JsonResponse({
+        'id': id
+    })
+    # profile = Profile.objects.get(user__id=auth.get_user(request).id)
+    # goods = FavouriteGoods.objects.filter(person=profile.id).values_list('name', flat=True)
+    # return JsonResponse(
+    #     {
+    #         'name': ' '.join([User.objects.filter(profile=profile.id).values_list('first_name', flat=True)[0],
+    #                           User.objects.filter(profile=profile.id).values_list('last_name', flat=True)[0]]),
+    #         'photo': profile.photo.url,
+    #         'favourite_goods': [item for item in goods]
+    #     }
+    # )
 
 
 def like_dislike_counter(content, object):

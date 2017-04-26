@@ -72,7 +72,7 @@ class Repayment(models.Model):
     who_receives = models.ForeignKey(to=Profile, related_name='to_whom', verbose_name='Кому должен отдать денег')
     which_party = models.ForeignKey(to=Party, verbose_name='За какую тусовку')
     price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Сколько должен отдать денег')
-    is_payed = models.BooleanField(default=True)
+    is_payed = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'Оплата'
