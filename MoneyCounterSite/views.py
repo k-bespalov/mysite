@@ -78,7 +78,7 @@ def add_payment(request):
         date = datetime.today()
         # print(date.month)
         parties = Party.objects.filter(persons__user__username=auth.get_user(request).username,
-                                       datetime__year=date.year).order_by('datetime')
+                                       datetime__year=date.year).order_by('-datetime')
         return JsonResponse({
             'parties': [
                 {
@@ -151,6 +151,53 @@ def friends_list(request):
     })
 
 
+def to_me_repayments_list(request):
+    to_me = Repayment.objects.filter(who_receives__user__id=request.user.id, is_payed=False).order_by('-id')
+    return JsonResponse({
+        'to_me': [
+            {
+                'id': rep.id,
+                'who_pays':
+                    {
+                        'photo': rep.who_pays.photo.url,
+                        'name': ' '.join([rep.who_pays.user.first_name, rep.who_pays.user.last_name])
+                     },
+                'which_party':
+                    {
+                        'party_id': rep.which_party_id,
+                        'party_name': rep.which_party.name
+                    },
+                'price': rep.price,
+                'is_payed': rep.is_payed
+
+            } for rep in to_me
+        ]
+    })
+
+
+def from_me_repayments_list(request):
+    from_me = Repayment.objects.filter(who_pays__user__id=request.user.id, is_payed=False).order_by('-id')
+    return JsonResponse({
+        'from_me': [
+            {
+                'who_pays':
+                    {
+                        'photo': rep.who_receives.photo.url,
+                        'name': ' '.join([rep.who_receives.user.first_name, rep.who_receives.user.last_name])
+                     },
+                'which_party':
+                    {
+                        'party_id': rep.which_party_id,
+                        'party_name': rep.which_party.name
+                    },
+                'price': rep.price,
+                'is_payed': rep.is_payed
+
+            } for rep in from_me
+        ]
+    })
+
+
 def party_detail(request, party_id):
     try:
         party = Party.objects.get(id=party_id)
@@ -165,13 +212,12 @@ def party_detail(request, party_id):
             'cost': count_cost_party(party_id),
             # 'likes': like_dislike_counter(2, party_id)[0],
             # 'dislikes': like_dislike_counter(2, party_id)[1],
-            'persons': [{'id': person.id, 'first_name': User.objects.get(id=person.user_id).first_name,
+            'persons': [{'id': person.id, 'photo': person.photo.url, 'first_name': User.objects.get(id=person.user_id).first_name,
                          'last_name': User.objects.get(id=person.user_id).last_name} for person in
                         Profile.objects.filter(party=party_id)],
             'payments': [
                 {'who': ' '.join([User.objects.filter(profile__payment=payment).values_list('first_name', flat=True)[0],
-                                  User.objects.filter(profile__payment=payment).values_list('last_name', flat=True)[
-                                      0]]),
+                                  User.objects.filter(profile__payment=payment).values_list('last_name', flat=True)[0]]),
                  'photo': Profile.objects.get(payment=payment).photo.url,
                  'datetime': payment.datetime,
                  'description': payment.description,
@@ -197,6 +243,18 @@ def change_friend_status(request):
             # return JsonResponse({
             #     'friend_status': True
             # })
+        return HttpResponse(status=200)
+    else:
+        return Http404
+
+
+def set_payed(request):
+    if request.method == 'POST':
+        id = json.loads(request.body)['id']
+        print(id)
+        repayment = Repayment.objects.get(id=id)
+        repayment.is_payed = True
+        repayment.save()
         return HttpResponse(status=200)
     else:
         return Http404

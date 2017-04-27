@@ -24,7 +24,8 @@ from django.conf import settings
 from django.contrib.auth.views import logout
 import MoneyCounterSite.urls
 from MoneyCounterSite.views import party_list, add_party, my_login, show_party_participants, show_profile, friends_list, \
-    my_payments_list, party_detail, add_payment, get_payers, show_my_profile_id, change_friend_status
+    my_payments_list, party_detail, add_payment, get_payers, show_my_profile_id, change_friend_status, to_me_repayments_list, \
+    from_me_repayments_list, set_payed
 
 urlpatterns = [
     url(r'^parties$', party_list, name='party_list'),
@@ -36,6 +37,9 @@ urlpatterns = [
     url(r'^profile_id$', show_my_profile_id, name='show_my_profile'),
     url(r'^get/payers$', get_payers, name='get_payers'),
     url(r'^payments$', my_payments_list, name='my_payments_list'),
+    url(r'^to_me_repayments$', to_me_repayments_list, name='repayments_list'),
+    url(r'^from_me_repayments$', from_me_repayments_list, name='repayments_list'),
+    url(r'^set_payed$', set_payed, name='set_payed'),
     url(r'^participants(?P<party_id>\d+)/$', show_party_participants, name='show_party_participants'),
     url(r'^party(?P<party_id>\d+)$', party_detail, name='party_detail'),
     url(r'^', include(MoneyCounterSite.urls, namespace='MoneyCounterSite')),
