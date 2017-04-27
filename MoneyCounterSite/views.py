@@ -9,6 +9,7 @@ from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.http import JsonResponse
 from django.contrib import auth
 from django.db.models import Q
+from itertools import chain
 from datetime import tzinfo, timedelta, datetime
 from django.template.context_processors import csrf
 from django.db import IntegrityError
@@ -251,7 +252,7 @@ def change_friend_status(request):
 def set_payed(request):
     if request.method == 'POST':
         id = json.loads(request.body)['id']
-        print(id)
+        # print(id)
         repayment = Repayment.objects.get(id=id)
         repayment.is_payed = True
         repayment.save()
@@ -295,8 +296,7 @@ def show_profile(request, id):
         return JsonResponse(
             {
                 'id': profile.id,
-                'name': ' '.join([User.objects.filter(profile=int(id)).values_list('first_name', flat=True)[0],
-                                  User.objects.filter(profile=int(id)).values_list('last_name', flat=True)[0]]),
+                'name': profile.user.get_full_name(),
                 'photo': profile.photo.url,
                 'favourite_goods': [item for item in goods],
                 'friend_status': Profile.objects.get(id=Profile.objects.get(user=auth.get_user(request)).id).friends.filter(user__id=int(id)).exists()
@@ -348,6 +348,24 @@ def like_dislike_counter(content, object):
         else:
             counter[1] += 1
     return counter
+
+
+def find_friends(request):
+    text = json.loads(request.body)['text']
+    qs = Profile.objects.all()
+    for term in text.split():
+        qs = qs.filter(Q(user__first_name__icontains=term) | Q(user__last_name__icontains=term))
+    return JsonResponse({
+        'results': [
+            {
+                'id': profile.id,
+                'photo': profile.photo.url,
+                'name': profile.user.get_full_name()
+            } for profile in qs
+        ]
+    })
+
+
 
 
 def my_payments_list(request):
