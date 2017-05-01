@@ -9,6 +9,7 @@ from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.http import JsonResponse
 from django.contrib import auth
 from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from itertools import chain
 from datetime import tzinfo, timedelta, datetime
 from django.template.context_processors import csrf
@@ -22,7 +23,23 @@ from MoneyCounterSite.models import *
 
 # @login_required(login_url="/login/")
 def party_list(request):
-    parties = Party.objects.filter(persons__user__username=auth.get_user(request).username).order_by('-datetime')[:20]
+    parties_list = Party.objects.filter(persons__user__username=auth.get_user(request).username).order_by('-datetime')
+    paginator = Paginator(parties_list, 1)
+    page = json.loads(request.body)['page']
+        # request.GET.get('page')
+    # print(page)
+    try:
+        parties = paginator.page(page)
+        # print(parties)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        parties = paginator.page(1)
+        # print(parties)
+    except EmptyPage:
+        return HttpResponse(status=200)
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        # parties = paginator.page(paginator.num_pages)
+        # print(parties)
     return JsonResponse({
         'parties': [
             {
@@ -36,8 +53,51 @@ def party_list(request):
                             Profile.objects.filter(party=p)],
 
             } for p in parties
-        ]
+        ],
+        'next_page': paginator.page(page).has_next(),
     })
+
+
+def party_change(request, party_id):
+    print(request.method == 'GET')
+    party = Party.objects.get(id=int(party_id))
+    if request.method == 'GET':
+        # participants = party.persons.values_list('id', flat=True)
+        return JsonResponse({
+            'name': party.name,
+            'participants': [],
+            'place': party.place,
+            'date': party.datetime.date(),
+            'time': party.datetime.time()
+        })
+    if request.method == 'POST':
+        for person in Profile.objects.filter(party__id=int(party_id)):
+            party.persons.remove(person)
+        tmp = json.loads(request.body)
+        tmp['datetime'] = dt.parse(tmp['datetime'])
+        form = AddParty(tmp)
+        if form.is_valid():
+            party.name = form.cleaned_data['name']
+            party.datetime = form.cleaned_data['datetime']
+            party.place = form.cleaned_data['place']
+            # p = Party(name=name, datetime=datetime, place=place)
+            party.save()
+            participants_id = tmp['participants']
+            profile = Profile.objects.get(user__username=auth.get_user(request).username)
+            party.persons.add(profile)
+            if participants_id != []:
+                for id in participants_id:
+                    party.persons.add(Profile.objects.get(id=id))
+                return HttpResponse(status=200)
+            else:
+                friends = Profile.objects.filter(friends__id=profile.id)
+                for friend in friends:
+                    party.persons.add(friend)
+                return HttpResponse(status=200)
+        else:
+            return HttpResponse(status=403)
+    return HttpResponse(status=403)
+
 
 
 def add_party(request):
@@ -64,9 +124,15 @@ def add_party(request):
             participants_id = tmp['participants']
             profile = Profile.objects.get(user__username=auth.get_user(request).username)
             p.persons.add(profile)
-            for id in participants_id:
-                p.persons.add(Profile.objects.get(id=id))
-            return HttpResponse(status=200)
+            if participants_id != []:
+                for id in participants_id:
+                    p.persons.add(Profile.objects.get(id=id))
+                return HttpResponse(status=200)
+            else:
+                friends = Profile.objects.filter(friends__id=profile.id)
+                for friend in friends:
+                    p.persons.add(friend)
+                return HttpResponse(status=200)
         else:
             return HttpResponse(status=403)
 
@@ -232,13 +298,13 @@ def change_friend_status(request):
         id = json.loads(request.body)['id']
         profile = Profile.objects.get(user__id=auth.get_user(request).id)
         try:
-            friend = profile.friends.get(user__id__exact=id)
+            friend = profile.friends.get(id=id)
             profile.friends.remove(friend)
             # return JsonResponse({
             #     'status': False
             # })
         except Profile.DoesNotExist:
-            friend = Profile.objects.get(user__id=id)
+            friend = Profile.objects.get(id=id)
             profile.friends.add(friend)
 
             # return JsonResponse({
@@ -299,7 +365,7 @@ def show_profile(request, id):
                 'name': profile.user.get_full_name(),
                 'photo': profile.photo.url,
                 'favourite_goods': [item for item in goods],
-                'friend_status': Profile.objects.get(id=Profile.objects.get(user=auth.get_user(request)).id).friends.filter(user__id=int(id)).exists()
+                'friend_status': Profile.objects.get(id=Profile.objects.get(user__id=request.user.id).id).friends.filter(id=int(id)).exists()
             }
         )
     # return HttpResponse(status=201)
@@ -364,8 +430,6 @@ def find_friends(request):
             } for profile in qs
         ]
     })
-
-
 
 
 def my_payments_list(request):
